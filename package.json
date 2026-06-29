@@ -1,6 +1,12 @@
 {
-  "name": "gruvbox-wallpapers-main",
-  "module": "index.ts",
+  "name": "remove-small",
+  "version": "1.0.0",
+  "author": "HullPerse",
+  "module": "src/index.ts",
+  "scripts": {
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --compile --target=bun-windows-x64 --minify --drop=console --drop=debugger --outfile build/remove-small.exe"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

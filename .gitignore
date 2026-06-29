@@ -135,6 +135,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-
-/wallpapers
+images/
+src/images/
 output.txt
+src/output.txt
