@@ -1,4 +1,4 @@
-# gruvbox-wallpapers-main
+# remove images
 
 To install dependencies:
 
