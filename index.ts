@@ -31,7 +31,7 @@ async function isLarge(filePath: string) {
     const height = metadata.height || 0;
     return width >= MIN_WIDTH && height >= MIN_HEIGHT;
   } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
+    console.error(`[ERROR] Can't read ${filePath}:`, error);
     return null;
   }
 }
