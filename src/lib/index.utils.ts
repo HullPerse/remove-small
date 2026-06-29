@@ -1,11 +1,13 @@
 import path from "node:path";
-import { DEFAULT_CONFIG, PROTECTED_DIRECTORIES } from "../config/index.config";
+import {
+  CONFIG_FILE,
+  DEFAULT_CONFIG,
+  PROTECTED_DIRECTORIES,
+} from "../config/index.config";
 import type { ConfigType } from "../types";
 import Logger from "./logger.utils";
 
 const logger = new Logger("SYSTEM");
-
-const CONFIG_FILE = "config.json";
 
 export async function loadConfig(): Promise<ConfigType> {
   const configFile = Bun.file(CONFIG_FILE);
@@ -120,18 +122,39 @@ export async function isLarge(filePath: string, config: ConfigType) {
     const width = metadata.width || 0;
     const height = metadata.height || 0;
 
+    const configDimensions = {
+      max_width: config.DIMENSIONS.MAX_WIDTH,
+      max_height: config.DIMENSIONS.MAX_HEIGHT,
+
+      min_width: config.DIMENSIONS.MIN_WIDTH,
+      min_height: config.DIMENSIONS.MIN_HEIGHT,
+    };
+
+    const ratio: boolean = config.RATIO
+      ? Math.abs(
+          width / height - config.RATIO.RATIO_WIDTH / config.RATIO.RATIO_HEIGHT,
+        ) < 0.01
+      : false;
+
     if (!width || !height) return null;
 
-    const aspect = width / height;
-    const ratio =
-      Math.abs(
-        aspect - config.DIMENSIONS.RATIO_WIDTH / config.DIMENSIONS.RATIO_HEIGHT,
-      ) < 0.01;
+    const exceedsMax =
+      (configDimensions.max_width && width > configDimensions.max_width) ||
+      (configDimensions.max_height && height > configDimensions.max_height);
+
+    if (exceedsMax) return false;
+
+    if (!ratio) {
+      return (
+        width >= configDimensions.min_width &&
+        height >= configDimensions.min_height
+      );
+    }
 
     return (
       ratio &&
-      width >= config.DIMENSIONS.MIN_WIDTH &&
-      height >= config.DIMENSIONS.MIN_HEIGHT
+      width >= configDimensions.min_width &&
+      height >= configDimensions.min_height
     );
   } catch (error) {
     logger.setAuthor("ERROR").error(`Can't read ${filePath}: ${error}`);
@@ -153,7 +176,7 @@ export async function removeFile(filePath: string, config: ConfigType) {
               `${attempt}/${config.RETRY_COUNT}: ${path.basename(filePath)}`,
             );
           await new Promise((resolve) =>
-            setTimeout(resolve, config.DELAY * attempt),
+            setTimeout(resolve, config.RETRY_DELAY * attempt),
           );
           continue;
         }

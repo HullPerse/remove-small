@@ -11,10 +11,10 @@ import {
   pauseConsole,
   removeFile,
 } from "./lib/index.utils";
+import { CONFIG_FILE } from "./config/index.config";
 
 const logger = new Logger("SYSTEM");
 
-const CONFIG_FILE = "config.json";
 const configFileExists = await Bun.file(CONFIG_FILE).exists();
 
 const config: ConfigType = await loadConfig();

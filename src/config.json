@@ -1,14 +1,16 @@
 {
   "DIMENSIONS": {
     "MIN_HEIGHT": 1440,
-    "MIN_WIDTH": 2560,
-    "RATIO_HEIGHT": 9,
-    "RATIO_WIDTH": 16
+    "MIN_WIDTH": 2560
+  },
+  "RATIO": {
+    "RATIO_HEIGHT": 16,
+    "RATIO_WIDTH": 9
   },
   "DRY_RUN": true,
   "OUTPUT_PATH": "./output.txt",
   "RETRY_COUNT": 3,
-  "DELAY": 1000,
+  "RETRY_DELAY": 1000,
   "IMAGE_PATTERNS": [
     "**/*.jpg",
     "**/*.jpeg",

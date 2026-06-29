@@ -8,7 +8,7 @@
   "DRY_RUN": false,
   "OUTPUT_PATH": "./output.txt",
   "RETRY_COUNT": 3,
-  "DELAY": 1000,
+  "RETRY_DELAY": 1000,
   "IMAGE_PATTERNS": [
     "**/*.jpg",
     "**/*.jpeg",

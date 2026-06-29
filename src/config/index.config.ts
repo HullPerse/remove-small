@@ -1,17 +1,21 @@
 import type { ConfigType } from "../types";
 
+export const CONFIG_FILE = "config.json";
+
 // Default config
 export const DEFAULT_CONFIG: ConfigType = {
   DIMENSIONS: {
     MIN_HEIGHT: 1440,
     MIN_WIDTH: 2560,
+  },
+  RATIO: {
     RATIO_HEIGHT: 9,
     RATIO_WIDTH: 16,
   },
   DRY_RUN: false,
   OUTPUT_PATH: "./output.txt",
   RETRY_COUNT: 3,
-  DELAY: 1000,
+  RETRY_DELAY: 1000,
   IMAGE_PATTERNS: [
     "**/*.jpg",
     "**/*.jpeg",
