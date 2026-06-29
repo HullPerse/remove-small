@@ -1,9 +1,12 @@
 import type { ConfigType } from "../types";
 
 export const CONFIG_FILE = "config.json";
+export const CONFIG_TYPE = "types.txt";
 
 // Default config
 export const DEFAULT_CONFIG: ConfigType = {
+  //pizda
+
   DIMENSIONS: {
     MIN_HEIGHT: 1440,
     MIN_WIDTH: 2560,
@@ -38,7 +41,6 @@ export const DEFAULT_CONFIG: ConfigType = {
 export const PROTECTED_DIRECTORIES = [
   "/System",
   "/Windows",
-  "/Users",
   "/usr",
   "/etc",
   "/bin",

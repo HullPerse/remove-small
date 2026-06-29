@@ -1,6 +1,7 @@
 import path from "node:path";
 import {
   CONFIG_FILE,
+  CONFIG_TYPE,
   DEFAULT_CONFIG,
   PROTECTED_DIRECTORIES,
 } from "../config/index.config";
@@ -21,6 +22,31 @@ export async function loadConfig(): Promise<ConfigType> {
       logger
         .setAuthor("CONFIG")
         .log(`Created default config file: ${CONFIG_FILE}`);
+
+      const configTypes = `
+        DIMENSIONS: {
+          MIN_HEIGHT: number;
+          MIN_WIDTH: number;
+          MAX_HEIGHT?: number;
+          MAX_WIDTH?: number;
+        };
+        RATIO?: {
+          RATIO_HEIGHT: number;
+          RATIO_WIDTH: number;
+        };
+        DRY_RUN: boolean;
+        OUTPUT_PATH: string;
+        RETRY_COUNT: number;
+        RETRY_DELAY: number;
+        IMAGE_PATTERNS: string[];
+        ALLOWED_DIRECTORIES: string[];
+        RESTRICT_TO_IMAGES_FOLDER: boolean;
+        PAUSE_ON_COMPLETE: boolean;
+        PAUSE_ON_ERROR: boolean;
+        PROGRESS_SHOW: boolean;
+        `;
+
+      await Bun.write(CONFIG_TYPE, configTypes);
 
       return DEFAULT_CONFIG;
     }
@@ -122,40 +148,27 @@ export async function isLarge(filePath: string, config: ConfigType) {
     const width = metadata.width || 0;
     const height = metadata.height || 0;
 
-    const configDimensions = {
-      max_width: config.DIMENSIONS.MAX_WIDTH,
-      max_height: config.DIMENSIONS.MAX_HEIGHT,
-
-      min_width: config.DIMENSIONS.MIN_WIDTH,
-      min_height: config.DIMENSIONS.MIN_HEIGHT,
-    };
-
-    const ratio: boolean = config.RATIO
-      ? Math.abs(
-          width / height - config.RATIO.RATIO_WIDTH / config.RATIO.RATIO_HEIGHT,
-        ) < 0.01
-      : false;
-
     if (!width || !height) return null;
 
     const exceedsMax =
-      (configDimensions.max_width && width > configDimensions.max_width) ||
-      (configDimensions.max_height && height > configDimensions.max_height);
+      (config.DIMENSIONS.MAX_WIDTH && width > config.DIMENSIONS.MAX_WIDTH) ||
+      (config.DIMENSIONS.MAX_HEIGHT && height > config.DIMENSIONS.MAX_HEIGHT);
 
     if (exceedsMax) return false;
 
-    if (!ratio) {
-      return (
-        width >= configDimensions.min_width &&
-        height >= configDimensions.min_height
-      );
+    const meetsMinSize =
+      width >= config.DIMENSIONS.MIN_WIDTH &&
+      height >= config.DIMENSIONS.MIN_HEIGHT;
+
+    if (config.RATIO) {
+      const targetRatio = config.RATIO.RATIO_WIDTH / config.RATIO.RATIO_HEIGHT;
+      const imageRatio = width / height;
+      const matchesRatio = Math.abs(imageRatio - targetRatio) < 0.01;
+
+      return meetsMinSize && matchesRatio;
     }
 
-    return (
-      ratio &&
-      width >= configDimensions.min_width &&
-      height >= configDimensions.min_height
-    );
+    return meetsMinSize;
   } catch (error) {
     logger.setAuthor("ERROR").error(`Can't read ${filePath}: ${error}`);
     return null;
