@@ -29,7 +29,11 @@ async function isLarge(filePath: string) {
     const metadata = await new Bun.Image(filePath).metadata();
     const width = metadata.width || 0;
     const height = metadata.height || 0;
-    return width >= MIN_WIDTH && height >= MIN_HEIGHT;
+
+    const aspect = width / height;
+    const ratio = Math.abs(aspect - 16 / 9) < 0.01;
+
+    return ratio && width >= MIN_WIDTH && height >= MIN_HEIGHT;
   } catch (error) {
     console.error(`[ERROR] Can't read ${filePath}:`, error);
     return null;
