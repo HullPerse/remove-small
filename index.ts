@@ -1,11 +1,13 @@
 import { Glob } from "bun";
 import path from "node:path";
 
-const ROOT = process.cwd();
-const MIN_WIDTH = 2560;
-const MIN_HEIGHT = 1440;
-const DRY_RUN = true; // false - delete files, true - just list files
-const OUTPUT_PATH = "./output.txt";
+const ROOT: string = process.cwd();
+const MIN_WIDTH: number = 2560;
+const MIN_HEIGHT: number = 1440;
+const DRY_RUN: boolean = false; //false to delete
+const OUTPUT_PATH: string = "./output.txt";
+const RETRY_COUNT: number = 3;
+const DELAY = 1000;
 
 const deletedFiles: string[] = [];
 
@@ -22,22 +24,50 @@ const IMAGE_PATTERNS = [
   "**/*.heic",
 ];
 
-async function isImageLargeEnough(filePath: string) {
+async function isLarge(filePath: string) {
   try {
-    const meta = await new Bun.Image(filePath).metadata();
-
-    const width = meta.width ?? 0;
-    const height = meta.height ?? 0;
+    const metadata = await new Bun.Image(filePath).metadata();
+    const width = metadata.width || 0;
+    const height = metadata.height || 0;
     return width >= MIN_WIDTH && height >= MIN_HEIGHT;
-  } catch {
+  } catch (error) {
+    console.error(`Error reading ${filePath}:`, error);
     return null;
   }
 }
 
-async function main() {
-  const files = new Set<string>();
+async function removeFile(filePath: string) {
+  for (let attempt = 1; attempt <= RETRY_COUNT; attempt++) {
+    try {
+      await Bun.file(filePath).delete();
+      return true;
+    } catch (error: any) {
+      if (error.code === "EBUSY" || error.code === "EPERM") {
+        if (attempt < RETRY_COUNT) {
+          console.log(
+            `[BUSY] ${attempt}/${RETRY_COUNT}: ${path.basename(filePath)}`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, DELAY * attempt));
+          continue;
+        }
+      }
+      throw error;
+    }
+  }
+  return false;
+}
 
-  await Bun.file(OUTPUT_PATH).delete();
+async function main() {
+  let kept = 0;
+  let removed = 0;
+  let skipped = 0;
+
+  const files = new Set<string>();
+  const failedFiles: string[] = [];
+
+  await Bun.file(OUTPUT_PATH)
+    .delete()
+    .catch(() => {});
 
   for (const pattern of IMAGE_PATTERNS) {
     const glob = new Glob(pattern);
@@ -46,12 +76,8 @@ async function main() {
     }
   }
 
-  let kept = 0;
-  let removed = 0;
-  let skipped = 0;
-
   for (const file of files) {
-    const ok = await isImageLargeEnough(file);
+    const ok = await isLarge(file);
 
     if (ok === true) {
       kept++;
@@ -60,7 +86,7 @@ async function main() {
 
     if (ok === null) {
       skipped++;
-      console.warn(`Skipping unreadable/unsupported image: ${file}`);
+      console.warn(`[SKIP] Skipping unreadable/unsupported image: ${file}`);
       continue;
     }
 
@@ -68,17 +94,37 @@ async function main() {
       deletedFiles.push(
         `${deletedFiles.length + 1}: [DRY RUN] Would delete: ${file}`,
       );
+      console.log(`[DRY RUN] Would delete: ${path.basename(file)}`);
+      removed++;
     } else {
-      await Bun.file(file).delete();
-      console.log(`Deleted: ${file}`);
+      try {
+        await removeFile(file);
+        console.log(`[DELETED] ${path.basename(file)}`);
+        removed++;
+      } catch (error: any) {
+        console.error(
+          `[ERROR] Failed to delete ${path.basename(file)}:`,
+          error.message,
+        );
+        failedFiles.push(`${file}: ${error.message}`);
+      }
     }
-    removed++;
   }
 
-  await Bun.write(OUTPUT_PATH, deletedFiles.join("\n") + "\n");
+  let output = deletedFiles.join("\n");
+  if (failedFiles.length > 0) output += `[ERROR] ${failedFiles.join("\n")}`;
+
+  if (DRY_RUN) await Bun.write(OUTPUT_PATH, output + "\n");
+
   console.log(
-    `Done. Kept: ${kept}, removed: ${removed}, skipped: ${skipped}, dryRun: ${DRY_RUN}`,
+    `[DONE] Kept: ${kept}, removed: ${removed}, skipped: ${skipped}, dryRun: ${DRY_RUN}`,
   );
+
+  if (failedFiles.length > 0) {
+    console.error(
+      `[ERROR] ${failedFiles.length} files failed to delete. Check ${OUTPUT_PATH} for details \n`,
+    );
+  }
 }
 
 await main();
