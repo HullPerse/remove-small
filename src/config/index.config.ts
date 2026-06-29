@@ -5,8 +5,6 @@ export const CONFIG_TYPE = "types.txt";
 
 // Default config
 export const DEFAULT_CONFIG: ConfigType = {
-  //pizda
-
   DIMENSIONS: {
     MIN_HEIGHT: 1440,
     MIN_WIDTH: 2560,
@@ -14,6 +12,7 @@ export const DEFAULT_CONFIG: ConfigType = {
   RATIO: {
     RATIO_HEIGHT: 9,
     RATIO_WIDTH: 16,
+    TOLERANCE: 0.01,
   },
   DRY_RUN: false,
   OUTPUT_PATH: "./output.txt",

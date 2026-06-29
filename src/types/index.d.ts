@@ -10,6 +10,7 @@ export type ConfigType = {
   RATIO?: {
     RATIO_HEIGHT: number;
     RATIO_WIDTH: number;
+    TOLERANCE: number;
   };
   DRY_RUN: boolean;
   OUTPUT_PATH: string;

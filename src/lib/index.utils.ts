@@ -33,6 +33,7 @@ export async function loadConfig(): Promise<ConfigType> {
         RATIO?: {
           RATIO_HEIGHT: number;
           RATIO_WIDTH: number;
+          TOLERANCE: number;
         };
         DRY_RUN: boolean;
         OUTPUT_PATH: string;
@@ -163,7 +164,8 @@ export async function isLarge(filePath: string, config: ConfigType) {
     if (config.RATIO) {
       const targetRatio = config.RATIO.RATIO_WIDTH / config.RATIO.RATIO_HEIGHT;
       const imageRatio = width / height;
-      const matchesRatio = Math.abs(imageRatio - targetRatio) < 0.01;
+      const matchesRatio =
+        Math.abs(imageRatio - targetRatio) < config.RATIO.TOLERANCE;
 
       return meetsMinSize && matchesRatio;
     }

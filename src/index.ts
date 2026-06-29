@@ -125,7 +125,9 @@ async function main() {
     } else {
       try {
         await removeFile(file, config);
-        logger.setAuthor("DELETED").log(`${path.basename(file)}`);
+        if (config.PROGRESS_SHOW) {
+          logger.setAuthor("DELETED").log(`${path.basename(file)}`);
+        }
         removed++;
       } catch (error: any) {
         logger

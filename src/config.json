@@ -5,7 +5,8 @@
   },
   "RATIO": {
     "RATIO_HEIGHT": 16,
-    "RATIO_WIDTH": 9
+    "RATIO_WIDTH": 9,
+    "TOLERANCE": 0.01
   },
   "DRY_RUN": true,
   "OUTPUT_PATH": "./output.txt",
