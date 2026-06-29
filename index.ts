@@ -1,10 +1,21 @@
 import { Glob } from "bun";
 import path from "node:path";
 
+type dimensionsType = {
+  MIN_HEIGHT: number;
+  MIN_WIDTH: number;
+  RATIO_HEIGHT: number;
+  RATIO_WIDTH: number;
+};
+
 const ROOT: string = process.cwd();
-const MIN_WIDTH: number = 2560;
-const MIN_HEIGHT: number = 1440;
-const DRY_RUN: boolean = false; //false to delete
+const DIMENSIONS: dimensionsType = {
+  MIN_HEIGHT: 1440,
+  MIN_WIDTH: 2560,
+  RATIO_HEIGHT: 9,
+  RATIO_WIDTH: 16,
+};
+const DRY_RUN: boolean = true; //false to delete
 const OUTPUT_PATH: string = "./output.txt";
 const RETRY_COUNT: number = 3;
 const DELAY = 1000;
@@ -30,10 +41,16 @@ async function isLarge(filePath: string) {
     const width = metadata.width || 0;
     const height = metadata.height || 0;
 
-    const aspect = width / height;
-    const ratio = Math.abs(aspect - 16 / 9) < 0.01;
+    if (!width || !height) return null;
 
-    return ratio && width >= MIN_WIDTH && height >= MIN_HEIGHT;
+    const aspect = width / height;
+    const ratio =
+      Math.abs(aspect - DIMENSIONS.RATIO_WIDTH / DIMENSIONS.RATIO_HEIGHT) <
+      0.01;
+
+    return (
+      ratio && width >= DIMENSIONS.MIN_WIDTH && height >= DIMENSIONS.MIN_HEIGHT
+    );
   } catch (error) {
     console.error(`[ERROR] Can't read ${filePath}:`, error);
     return null;
