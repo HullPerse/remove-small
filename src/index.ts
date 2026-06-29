@@ -92,10 +92,7 @@ async function main() {
 
   for (const file of files) {
     processed++;
-    if (
-      (config.PROGRESS_SHOW && processed % 10 === 0) ||
-      processed === totalFiles
-    ) {
+    if (processed % 10 === 0 || processed === totalFiles) {
       logger
         .setAuthor("PROGRESS")
         .log(`Processing ${processed}/${totalFiles} files...`);
