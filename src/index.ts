@@ -14,7 +14,21 @@ import {
 
 const logger = new Logger("SYSTEM");
 
+const CONFIG_FILE = "config.json";
+const configFileExists = await Bun.file(CONFIG_FILE).exists();
+
 const config: ConfigType = await loadConfig();
+
+if (!configFileExists) {
+  logger
+    .setAuthor("CONFIG")
+    .log(`Please edit "${CONFIG_FILE}" to your preferences`);
+  logger.setAuthor("CONFIG").log("Then run the script again to start scanning");
+
+  await pauseConsole("Press Enter to exit...");
+  process.exit(0);
+}
+
 const ROOT: string = process.cwd();
 
 const deletedFiles: string[] = [];

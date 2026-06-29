@@ -19,6 +19,7 @@ export async function loadConfig(): Promise<ConfigType> {
       logger
         .setAuthor("CONFIG")
         .log(`Created default config file: ${CONFIG_FILE}`);
+
       return DEFAULT_CONFIG;
     }
   } catch (error) {
@@ -32,7 +33,7 @@ export async function loadConfig(): Promise<ConfigType> {
 export async function pauseConsole(
   message: string = "Press Enter to exit...",
 ): Promise<void> {
-  logger.log(`\n${message}`);
+  console.log(`\n${message}`);
 
   const reader = Bun.stdin.stream().getReader();
 
